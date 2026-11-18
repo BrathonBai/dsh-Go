@@ -1,0 +1,40 @@
+﻿name: Sync upstream main
+
+# This fork exists to carry the whale/BLE gateway reference implementation while
+# tracking ccch1mneyyy/dsh-Go. The upstream repository does not accept external
+# PRs (CONTRIBUTING.md), so this workflow only keeps the fork's main mirrored.
+on:
+  schedule:
+    - cron: '17 3 * * *'   # 03:17 UTC daily
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-upstream-main
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Merge upstream main
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add upstream https://github.com/ccch1mneyyy/dsh-Go.git 2>/dev/null || true
+          git fetch upstream main
+          if git merge-base --is-ancestor upstream/main HEAD; then
+            echo "Already up to date with upstream/main."
+            exit 0
+          fi
+          echo "Merging upstream/main into fork main."
+          git merge --no-edit upstream/main
+          git push origin main
