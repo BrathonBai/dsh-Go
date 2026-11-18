@@ -1,6 +1,7 @@
 package io.github.ccch1mneyyy.dsh_app.runtime
 
 import io.github.ccch1mneyyy.dsh_app.i18n.AppStrings
+import io.github.ccch1mneyyy.dsh_app.embodied.EmbodiedBleService
 import io.github.ccch1mneyyy.dsh_app.R
 import android.content.Context
 import io.github.ccch1mneyyy.dsh_app.performance.PerformancePolicy
@@ -528,6 +529,13 @@ class RuntimeController private constructor(private val app: Context) : DshProce
                 if (!safe && !speechOverlay) {
                     log("[dsh-app] voice input overlay not written; the voice model keeps DSH's defaults", "system")
                 }
+                // 鲸鲸蓝牙: bridge plugin + loopback token for the phone-side BLE gateway. The
+                // assets come from the Flutter bundle, so a checkout without them only loses the
+                // bridge; the engine starts unchanged.
+                val embodiedOverlay = !safe && EmbodiedGuest.writeFiles(app, installer.rootfs)
+                if (!safe && !embodiedOverlay) {
+                    log("[dsh-app] 鲸鲸蓝牙 bridge not written; the BLE gateway has no bridge to reach", "system")
+                }
                 if (pendingPhoneStorage && !storage) log("[dsh-app] phone storage requested but permission not granted", "system")
                 val env = LinkedHashMap<String, String>()
                 env["TZ"] = java.util.TimeZone.getDefault().id
@@ -578,7 +586,7 @@ class RuntimeController private constructor(private val app: Context) : DshProce
                 timeline.spawned()
                 val direct = directEngine()
                 val tawc = tawcEngine()
-                p.start(env, if (storage) PhoneStorage.binds() else emptyList(), safe, phone, direct.requested, direct.failed, searchOverlay, authOverlay, speechOverlay,
+                p.start(env, if (storage) PhoneStorage.binds() else emptyList(), safe, phone, direct.requested, direct.failed, searchOverlay, authOverlay, speechOverlay, embodiedOverlay,
                     tawcEngine = tawc.saved == true, tawcFailed = tawc.failed) { actualDirect ->
                     // SafeMode.prepare writes its own briefing; leave the original home untouched.
                     if (!safe) GuestSetup.writeAgentsMd(
@@ -1161,6 +1169,18 @@ class RuntimeController private constructor(private val app: Context) : DshProce
         phase = next
         emitStatus()
         DshService.updateNotification(app)
+        // 鲸鲸蓝牙: report the engine in the gateway's status, and keep its foreground service up
+        // exactly while the engine runs with the settings switch on. Transitional phases only
+        // update the reported state, so an engine restart keeps the BLE link.
+        EmbodiedBleService.syncEngine(
+            app,
+            when (next) {
+                Phase.RUNNING -> "running"
+                Phase.STARTING, Phase.INSTALLING, Phase.STOPPING -> "unknown"
+                else -> "stopped"
+            },
+            next == Phase.RUNNING,
+        )
     }
 
     private fun emitStatus() = synchronized(statusPublishLock) {

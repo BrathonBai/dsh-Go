@@ -84,7 +84,7 @@ class DshProcess(
      * [binds] are extra proot `-b host:guest` mounts, inserted before the guest command.
      * [safe] boots the rescue profile instead of `web` (see [SafeMode.profileArg]).
      */
-    fun start(guestEnv: Map<String, String>, binds: List<String> = emptyList(), safe: Boolean = false, phone: Boolean = false, directEngine: Boolean = false, directFailed: Boolean = false, searchOverlay: Boolean = false, authOverlay: Boolean = false, speechOverlay: Boolean = false, tawcEngine: Boolean = false, tawcFailed: Boolean = false, onLaunchMethod: ((Boolean) -> Unit)? = null) {
+    fun start(guestEnv: Map<String, String>, binds: List<String> = emptyList(), safe: Boolean = false, phone: Boolean = false, directEngine: Boolean = false, directFailed: Boolean = false, searchOverlay: Boolean = false, authOverlay: Boolean = false, speechOverlay: Boolean = false, embodiedOverlay: Boolean = false, tawcEngine: Boolean = false, tawcFailed: Boolean = false, onLaunchMethod: ((Boolean) -> Unit)? = null) {
         check(process == null) { "already started" }
         // tawcroot wins over Direct when both are on; like Direct it needs PRoot's fake hard links gone.
         val tawcWanted = tawcEngine && !safe
@@ -144,6 +144,8 @@ class DshProcess(
         var authPending = !safe && authOverlay && AppAuthGuest.file(rootfs).isFile
         // On-device voice input: the recognizer's phone settings, same rule.
         var speechPending = !safe && speechOverlay && SpeechGuest.file(rootfs).isFile
+        // 鲸鲸蓝牙: the BLE gateway's bridge, same rule.
+        var embodiedPending = !safe && embodiedOverlay && EmbodiedGuest.file(rootfs).isFile
         for (arg in launchArgv) {
             if (!bindsPlaced && arg == "/usr/bin/env") {
                 allBinds.forEach { argv += "-b"; argv += it }
@@ -164,7 +166,10 @@ class DshProcess(
                 if (withAuth != null) authPending = false
                 val withSpeech = if (speechPending) SpeechGuest.launchArg(withAuth ?: withSearch ?: withPhone ?: selected ?: arg) else null
                 if (withSpeech != null) speechPending = false
-                argv += expand(withSpeech ?: withAuth ?: withSearch ?: withPhone ?: selected ?: arg)
+                // 鲸鲸蓝牙: add its --patch overlay to `dsh web` (never in safe mode).
+                val withEmbodied = if (embodiedPending) EmbodiedGuest.launchArg(withSpeech ?: withAuth ?: withSearch ?: withPhone ?: selected ?: arg) else null
+                if (withEmbodied != null) embodiedPending = false
+                argv += expand(withEmbodied ?: withSpeech ?: withAuth ?: withSearch ?: withPhone ?: selected ?: arg)
             }
         }
         check(!safe || profileSelected) { "safe mode: this runtime's launch command has no `dsh web` to replace" }
