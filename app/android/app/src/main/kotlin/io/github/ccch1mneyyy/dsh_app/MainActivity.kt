@@ -13,6 +13,7 @@ import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.embedding.engine.FlutterEngineCache
 import io.flutter.embedding.engine.dart.DartExecutor
 import io.flutter.plugin.common.MethodChannel
+import io.github.ccch1mneyyy.dsh_app.embodied.EmbodiedBlePlugin
 import io.github.ccch1mneyyy.dsh_app.files.FilesPlugin
 import io.github.ccch1mneyyy.dsh_app.launch.LaunchScreen
 import io.github.ccch1mneyyy.dsh_app.launch.LaunchThemeSync
@@ -41,6 +42,7 @@ class MainActivity : FlutterActivity() {
         cache.get(ENGINE_ID)?.let { return it }
         return FlutterEngine(applicationContext).also { engine ->
             engine.plugins.add(RuntimePlugin())
+            engine.plugins.add(EmbodiedBlePlugin())
             engine.plugins.add(PhonePlugin())
             engine.plugins.add(NotifyPlugin())
             engine.plugins.add(FilesPlugin())

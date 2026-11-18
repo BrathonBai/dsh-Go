@@ -30,6 +30,7 @@ import '../about_page.dart';
 import '../appearance/appearance_page.dart';
 import '../background_guide_page.dart';
 import '../diagnostics_page.dart';
+import '../embodied_page.dart';
 import '../interface_page.dart';
 import '../media_settings_page.dart';
 import '../notification_settings.dart';
@@ -53,6 +54,7 @@ Widget settingsPage(SettingsPageId id, {String? sessionId}) => switch (id) {
   SettingsPageId.hub => const SettingsScreen(),
   SettingsPageId.appearance => const AppearancePage(),
   SettingsPageId.pets => const PetSettingsPage(),
+  SettingsPageId.embodied => const EmbodiedPage(),
   SettingsPageId.performance => const PerformancePage(),
   SettingsPageId.voice => const VoiceSettingsPage(),
   SettingsPageId.voiceReading => const CompanionVoicePage(shared: true),

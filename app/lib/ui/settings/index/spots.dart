@@ -80,6 +80,7 @@ enum SettingsPageId {
   plugins,
   appearance,
   pets,
+  embodied,
   interface,
   notifications,
   voice,
@@ -494,6 +495,15 @@ final _pages = <SettingsPageMeta>[
     keywords: (l) => l.searchKwMediaGeneration,
     freq: Freq.medium,
     links: const ['media'],
+  ),
+  SettingsPageMeta(
+    SettingsPageId.embodied,
+    title: (l) => '鲸鲸蓝牙',
+    group: _abilities,
+    keywords: (l) => '鲸鲸 BLE 蓝牙 Watcher 外接设备',
+    freq: Freq.medium,
+    links: const ['embodied-ble', 'whale-ble'],
+    androidOnly: true,
   ),
   SettingsPageMeta(
     SettingsPageId.plugins,
@@ -1225,6 +1235,49 @@ abstract final class Spots {
     title: (l) => l.hubSettingsLicenses,
     keywords: (l) => l.searchKwLicenses,
   );
+
+  // 鲸鲸蓝牙（BLE gateway）。v1 的文案在 embodied_strings.dart 里，这里只做索引锚点。
+  static final embodiedEnable = SettingSpot(
+    'embodied-enable',
+    page: SettingsPageId.embodied,
+    title: (l) => '启用鲸鲸蓝牙',
+    keywords: (l) => '蓝牙 BLE 外接设备 Watcher 网关',
+  );
+  static final embodiedScan = SettingSpot(
+    'embodied-scan',
+    page: SettingsPageId.embodied,
+    title: (l) => '扫描设备',
+  );
+  static final embodiedConnection = SettingSpot(
+    'embodied-connection',
+    page: SettingsPageId.embodied,
+    title: (l) => '连接 / 断开',
+  );
+  static final embodiedAutoConnect = SettingSpot(
+    'embodied-auto-connect',
+    page: SettingsPageId.embodied,
+    title: (l) => '自动连接',
+  );
+  static final embodiedBridgeUrl = SettingSpot(
+    'embodied-bridge-url',
+    page: SettingsPageId.embodied,
+    title: (l) => '桥接地址',
+  );
+  static final embodiedDevicePrefix = SettingSpot(
+    'embodied-device-prefix',
+    page: SettingsPageId.embodied,
+    title: (l) => '设备名前缀',
+  );
+  static final embodiedRefresh = SettingSpot(
+    'embodied-refresh',
+    page: SettingsPageId.embodied,
+    title: (l) => '刷新状态',
+  );
+  static final embodiedOpenBluetooth = SettingSpot(
+    'embodied-open-bluetooth',
+    page: SettingsPageId.embodied,
+    title: (l) => '打开系统蓝牙',
+  );
 }
 
 final _rows = <SettingSpot>[
@@ -1303,4 +1356,12 @@ final _rows = <SettingSpot>[
   Spots.updateAuto,
   Spots.star,
   Spots.licenses,
+  Spots.embodiedEnable,
+  Spots.embodiedScan,
+  Spots.embodiedConnection,
+  Spots.embodiedAutoConnect,
+  Spots.embodiedBridgeUrl,
+  Spots.embodiedDevicePrefix,
+  Spots.embodiedRefresh,
+  Spots.embodiedOpenBluetooth,
 ];
